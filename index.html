@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier un fichier VCF</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        form {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            background: green;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: green;
+        }
+        .output {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .output a {
+            color: green;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <h2 style="color:green;font-weight: bold;">KAREL DIGITAL</h2>
+    <h3>Modification de Fichier VCF</h3>
+    <form id="vcfForm">
+        <label for="vcfFile">Choisissez un fichier VCF :</label>
+        <input type="file" id="vcfFile" accept=".vcf">
+        <button type="button" onclick="processVCF()">Modifier</button>
+    </form>
+    <div class="output" id="output"></div>
+
+    <script>
+        function processVCF() {
+            const fileInput = document.getElementById('vcfFile');
+            const outputDiv = document.getElementById('output');
+
+            if (!fileInput.files.length) {
+                alert("Veuillez choisir un fichier VCF.");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const content = e.target.result;
+                const lines = content.split('\n');
+                let modifiedContent = "";
+
+                for (let line of lines) {
+                    if (line.startsWith("TEL")) {
+                        const originalNumber = line.split(':')[1].trim();
+                        let modifiedNumber = "";
+
+                        // Ajouter un numéro modifié tout en gardant l'ancien
+                        if (originalNumber.startsWith("+229")) {
+                            modifiedNumber = "+22901" + originalNumber.slice(4);
+                        } else {
+                            modifiedNumber = "01" + originalNumber;
+                        }
+
+                        // Ajouter l'ancien numéro comme WhatsApp et le nouveau modifié
+                        modifiedContent += line + '\n';
+                        modifiedContent += "TEL;TYPE=OTHER:" + modifiedNumber + '\n';
+                    } else {
+                        modifiedContent += line + '\n';
+                    }
+                }
+
+                const blob = new Blob([modifiedContent], { type: "text/vcard" });
+                const url = URL.createObjectURL(blob);
+                outputDiv.innerHTML = `<a href="${url}" download="modified.vcf">Télécharger le fichier VCF modifié</a>`;
+            };
+
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
